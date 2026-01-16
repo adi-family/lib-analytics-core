@@ -251,6 +251,34 @@ pub enum AnalyticsEvent {
         user_id: Option<Uuid>,
         context: Option<serde_json::Value>,
     },
+
+    // ===== Balance Events =====
+    /// Balance created/initialized
+    BalanceCreated { user_id: Uuid, balance_id: Uuid },
+
+    /// Balance deposit
+    BalanceDeposit {
+        user_id: Uuid,
+        transaction_id: Uuid,
+        amount: i64,
+        reference_type: Option<String>,
+    },
+
+    /// Balance debit
+    BalanceDebit {
+        user_id: Uuid,
+        transaction_id: Uuid,
+        amount: i64,
+        reference_type: Option<String>,
+    },
+
+    /// Insufficient balance (debit rejected)
+    BalanceInsufficient {
+        user_id: Uuid,
+        requested_amount: i64,
+        current_balance: i64,
+        reference_type: Option<String>,
+    },
 }
 
 impl AnalyticsEvent {
@@ -287,6 +315,10 @@ impl AnalyticsEvent {
             AnalyticsEvent::ProxyRequest { .. } => "proxy_request",
             AnalyticsEvent::DatabaseQuery { .. } => "database_query",
             AnalyticsEvent::ApplicationError { .. } => "application_error",
+            AnalyticsEvent::BalanceCreated { .. } => "balance_created",
+            AnalyticsEvent::BalanceDeposit { .. } => "balance_deposit",
+            AnalyticsEvent::BalanceDebit { .. } => "balance_debit",
+            AnalyticsEvent::BalanceInsufficient { .. } => "balance_insufficient",
         }
     }
 
@@ -330,6 +362,10 @@ impl AnalyticsEvent {
             AnalyticsEvent::ApiRequest { user_id, .. } => *user_id,
             AnalyticsEvent::ProxyRequest { user_id, .. } => Some(*user_id),
             AnalyticsEvent::ApplicationError { user_id, .. } => *user_id,
+            AnalyticsEvent::BalanceCreated { user_id, .. } => Some(*user_id),
+            AnalyticsEvent::BalanceDeposit { user_id, .. } => Some(*user_id),
+            AnalyticsEvent::BalanceDebit { user_id, .. } => Some(*user_id),
+            AnalyticsEvent::BalanceInsufficient { user_id, .. } => Some(*user_id),
             _ => None,
         }
     }
